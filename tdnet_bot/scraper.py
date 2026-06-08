@@ -3,11 +3,16 @@ from bs4 import BeautifulSoup
 from datetime import date
 
 
-def fetch_disclosures(target_date=None):
-    d = target_date or date.today()
-    url = f"https://www.release.tdnet.info/inbs/I_list_001_{d:%Y%m%d}.html"
+def fetch_page(d, page):
+    """指定日・指定ページの開示一覧を取得する。1件も無ければ空リストを返す。"""
+    url = f"https://www.release.tdnet.info/inbs/I_list_{page:03d}_{d:%Y%m%d}.html"
     resp = requests.get(url, timeout=10)
     resp.encoding = "utf-8"
+
+    # 存在しないページは404になることがあるので確認
+    if resp.status_code != 200:
+        return []
+
     soup = BeautifulSoup(resp.text, "html.parser")
 
     disclosures = []
@@ -28,6 +33,22 @@ def fetch_disclosures(target_date=None):
     return disclosures
 
 
+def fetch_disclosures(target_date=None):
+    """全ページを巡回して、その日の開示をすべて取得する。"""
+    d = target_date or date.today()
+    all_disclosures = []
+    page = 1
+    while True:
+        items = fetch_page(d, page)
+        if not items:          # 空ページ＝最終ページの次なので終了
+            break
+        all_disclosures.extend(items)
+        page += 1
+    return all_disclosures
+
+
 if __name__ == "__main__":
-    for item in fetch_disclosures():
+    results = fetch_disclosures()
+    for item in results:
         print(item["code"], item["company"], item["title"])
+    print(f"\n合計 {len(results)} 件")
