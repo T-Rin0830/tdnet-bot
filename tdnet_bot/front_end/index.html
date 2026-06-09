@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>TDnet 開示一覧</title>
+  <style>
+    body { font-family: sans-serif; margin: 2rem; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; }
+    th { background: #f2f2f2; }
+    #status { margin-bottom: 1rem; color: #555; }
+  </style>
+</head>
+<body>
+  <h1>TDnet 開示一覧</h1>
+  <div id="status">読み込み中...</div>
+  <table>
+    <thead>
+      <tr><th>時刻</th><th>コード</th><th>会社名</th><th>表題</th></tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+
+  <script>
+    async function load() {
+      const status = document.getElementById("status");
+      const tbody = document.getElementById("tbody");
+      try {
+        const res = await fetch("http://127.0.0.1:8000/api/disclosures");
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        tbody.innerHTML = "";
+        for (const item of data) {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${item.time}</td>
+            <td>${item.code}</td>
+            <td>${item.company}</td>
+            <td>${item.title}</td>
+          `;
+          tbody.appendChild(tr);
+        }
+        status.textContent = `${data.length} 件取得`;
+      } catch (err) {
+        status.textContent = `エラー: ${err.message}`;
+      }
+    }
+
+    load();
+  </script>
+</body>
+</html>
