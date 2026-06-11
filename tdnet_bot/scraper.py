@@ -45,10 +45,3 @@ def fetch_disclosures(target_date=None):
         all_disclosures.extend(items)
         page += 1
     return all_disclosures
-
-
-if __name__ == "__main__":
-    results = fetch_disclosures()
-    for item in results:
-        print(item["code"], item["company"], item["title"])
-    print(f"\n合計 {len(results)} 件")

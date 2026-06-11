@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from tdnet_bot.scraper import fetch_disclosures
+from tdnet_bot.db import load_disclosures
 
 app = FastAPI()
 
@@ -20,4 +20,4 @@ def read_root():
 
 @app.get("/api/disclosures")
 def get_disclosures():
-    return fetch_disclosures()
+    return [dict(row) for row in load_disclosures()]
