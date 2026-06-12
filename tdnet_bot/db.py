@@ -25,14 +25,18 @@ def init_db():
         """)
 
 def save_disclosures(items):
+    existing_urls = load_existing_urls()
+    new_items = [item for item in items if item["pdf_url"] not in existing_urls]
     with get_connection() as conn:
-        for item in items:
+        for item in new_items:
             conn.execute("""
                 INSERT OR IGNORE
                 INTO disclosures 
                 (pdf_url,time,code,company,title)
                 VALUES(?, ?, ?, ?, ?)"""
                 ,(item["pdf_url"], item["time"], item["code"], item["company"], item["title"]))
+    return new_items
+
 
 def load_disclosures() :
     with get_connection() as conn:
@@ -43,19 +47,25 @@ def load_disclosures() :
                     """).fetchall()
     return result
 
+def load_existing_urls():
+    with get_connection() as conn:
+        result = conn.execute("""
+                    SELECT pdf_url
+                    FROM disclosures
+                    """).fetchall()
+        return {data[0] for data in result}
+    
+
 def collect():
     init_db()
     results = fetch_disclosures()
     save_disclosures(results)
-    print(f"collect: {len(results)} 件保存")
     return results
 
 
 
 if __name__ == "__main__":
-    results = load_disclosures()
-    for item in results:
-        #print(item["code"], item["company"], item["title"])
-        print(item["pdf_url"], item["time"], item["code"], item["company"], item["title"])
+    results = collect()
+    ##print(item["pdf_url"], item["time"], item["code"], item["company"], item["title"])
        
-    print(f"\n合計 {len(results)} 件")
+    #print(f"\n合計 {len(results)} 件")
