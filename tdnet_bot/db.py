@@ -43,13 +43,16 @@ def load_disclosures() :
                     """).fetchall()
     return result
 
+def collect():
+    init_db()
+    results = fetch_disclosures()
+    save_disclosures(results)
+    print(f"collect: {len(results)} 件保存")
+    return results
+
 
 
 if __name__ == "__main__":
-    init_db()
-    #print(f"DB を初期化しました: {DB_PATH}")
-    #results = fetch_disclosures()
-    #save_disclosures(results)
     results = load_disclosures()
     for item in results:
         #print(item["code"], item["company"], item["title"])
